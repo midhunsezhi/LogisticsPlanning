@@ -51,6 +51,17 @@ class AirCargoProblem(Problem):
         # for example, the action schema 'Load(c, p, a)' can represent the concrete actions 'Load(C1, P1, SFO)'
         # or 'Load(C2, P2, JFK)'.  The actions for the planning problem must be concrete because the problems in
         # forward search and Planning Graphs must use Propositional Logic
+        """
+        Action(Load(c, p, a),
+	PRECOND: At(c, a) ∧ At(p, a) ∧ Cargo(c) ∧ Plane(p) ∧ Airport(a)
+	EFFECT: ¬ At(c, a) ∧ In(c, p))
+Action(Unload(c, p, a),
+	PRECOND: In(c, p) ∧ At(p, a) ∧ Cargo(c) ∧ Plane(p) ∧ Airport(a)
+	EFFECT: At(c, a) ∧ ¬ In(c, p))
+Action(Fly(p, from, to),
+	PRECOND: At(p, from) ∧ Plane(p) ∧ Airport(from) ∧ Airport(to)
+	EFFECT: ¬ At(p, from) ∧ At(p, to))
+    """
 
         def load_actions():
             '''Create all concrete Load actions and return a list
@@ -58,7 +69,20 @@ class AirCargoProblem(Problem):
             :return: list of Action objects
             '''
             loads = []
-            # TODO create all load ground actions from the domain Load action
+
+            for cargo in self.cargos:
+                for airport in self.airports:
+                    for plane in self.planes:
+                        precond_pos = [expr("At({}, {})".format(cargo, airport)),
+                                       expr("At({}, {})".format(plane, airport))]
+                        precond_neg = []
+                        effect_add = [expr("At({}, {})".format(cargo, plane))]
+                        effect_rem = [expr("At({}, {})".format(cargo, airport))]
+                        load = Action(expr("Load({}, {}, {})".format(cargo, plane, airport)),
+                                         [precond_pos, precond_neg],
+                                         [effect_add, effect_rem])
+                        loads.append(load)
+
             return loads
 
         def unload_actions():
