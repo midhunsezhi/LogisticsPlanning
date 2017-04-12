@@ -65,7 +65,7 @@ class AirCargoProblem(Problem):
                         precond_pos = [expr("At({}, {})".format(cargo, airport)),
                                        expr("At({}, {})".format(plane, airport))]
                         precond_neg = []
-                        effect_add = [expr("At({}, {})".format(cargo, plane))]
+                        effect_add = [expr("In({}, {})".format(cargo, plane))]
                         effect_rem = [expr("At({}, {})".format(cargo, airport))]
                         load = Action(expr("Load({}, {}, {})".format(cargo, plane, airport)),
                                          [precond_pos, precond_neg],
@@ -83,11 +83,11 @@ class AirCargoProblem(Problem):
             for cargo in self.cargos:
                 for airport in self.airports:
                     for plane in self.planes:
-                        precond_pos = [expr("At({}, {})".format(cargo, plane)),
+                        precond_pos = [expr("In({}, {})".format(cargo, plane)),
                                        expr("At({}, {})".format(plane, airport))]
                         precond_neg = []
                         effect_add = [expr("At({}, {})".format(cargo, airport))]
-                        effect_rem = [expr("At({}, {})".format(cargo, plane))]
+                        effect_rem = [expr("In({}, {})".format(cargo, plane))]
                         unload = Action(expr("Unload({}, {}, {})".format(cargo, plane, airport)),
                                          [precond_pos, precond_neg],
                                          [effect_add, effect_rem])
@@ -306,13 +306,12 @@ def air_cargo_p3() -> AirCargoProblem:
            expr('At(C1, ORD)'),
            expr('In(C1, P1)'),
            expr('In(C1, P2)'),
-           expr('In(C1, P3)'),
            expr('At(P1, JFK)'),
            expr('At(P1, ATL)'),
            expr('At(P1, ORD)'),
            expr('At(P2, SFO)'),
            expr('At(P2, ATL)'),
-           expr('At(P1, ORD)'),
+           expr('At(P2, ORD)'),
            ]
     init = FluentState(pos, neg)
     goal = [expr('At(C1, JFK)'),
