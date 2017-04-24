@@ -341,9 +341,9 @@ class PlanningGraph():
         self.s_levels.append(set())
         for a_node in self.a_levels[level-1]:
             for s_node in a_node.effnodes:
+                self.s_levels[level].add(s_node)
                 s_node.parents.add(a_node)
                 a_node.children.add(s_node)
-                self.s_levels[level].add(s_node)
 
 
     def update_a_mutex(self, nodeset):
@@ -438,6 +438,10 @@ class PlanningGraph():
         '''
 
         # TODO test for Competing Needs between nodes
+        for node1 in node_a1.parents:
+            for node2 in node_a2.parents:
+                if node1.is_mutex(node2):
+                    return True
         return False
 
     def update_s_mutex(self, nodeset: set):
@@ -472,7 +476,9 @@ class PlanningGraph():
         :param node_s2: PgNode_s
         :return: bool
         '''
-        # TODO test for negation between nodes
+        
+        if (node_s1.symbol == node_s2.symbol) and (node_s1.is_pos != node_s2.is_pos):
+            return True
         return False
 
     def inconsistent_support_mutex(self, node_s1: PgNode_s, node_s2: PgNode_s):
@@ -491,8 +497,12 @@ class PlanningGraph():
         :param node_s2: PgNode_s
         :return: bool
         '''
-        # TODO test for Inconsistent Support between nodes
-        return False
+        # test for Inconsistent Support between nodes
+        for parent in node_s1.parents:
+            for parent2 in node_s2.parents:
+                if not parent.is_mutex(parent2):
+                    return False
+        return True
 
     def h_levelsum(self) -> int:
         '''The sum of the level costs of the individual goals (admissible if goals independent)
@@ -502,4 +512,12 @@ class PlanningGraph():
         level_sum = 0
         # TODO implement
         # for each goal in the problem, determine the level cost, then add them together
+        for goal in self.problem.goal:
+            node_s = PgNode_s(goal, True)
+            level_index = 0
+            for state_set in self.s_levels:
+                if node_s in state_set:
+                    level_sum += level_index
+                    break
+                level_index += 1
         return level_sum
